@@ -1,10 +1,13 @@
+#%%
+import os
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
-data_path = '.\\data\\base_data.xlsx'
-data = pd.read_excel(data_path, sheet_name='data')
-data = data[['trm_cierre']]
+os.chdir(r"/Users/raul/Documents/GitHub/lstm_inflacion")
+data_path = r"./data/base_data.xlsx"
+data = pd.read_excel(data_path, sheet_name='data', )
+data = data[['Inflation']].dropna()
 
 # Escalar los datos entre 0 y 1
 scaler = MinMaxScaler(feature_range=(0, 1))
@@ -91,7 +94,7 @@ plt.plot(scaler.inverse_transform(scaled_data), label='Datos reales')
 plt.plot(train_plot, label='Predicción de entrenamiento')
 plt.plot(test_plot, label='Predicción de prueba')
 plt.xlabel('Fecha')
-plt.ylabel('TRM_cierre')
+plt.ylabel('Inflation')
 plt.legend()
 plt.show()
 
@@ -122,17 +125,19 @@ last_date = data.index[-1]
 future_dates = pd.date_range(last_date, periods=12, freq='M')
 
 # Crear un DataFrame para almacenar las predicciones futuras
-future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['TRM_cierre_pred'])
+future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Inflation_pred'])
 
 # Mostrar las predicciones futuras
 print(future_df)
 
 # Graficar las predicciones futuras junto con los datos históricos
 plt.figure(figsize=(12, 6))
-plt.plot(data['trm_cierre'], label='Datos históricos')
+plt.plot(data['Inflation'], label='Datos históricos')
 plt.plot(future_df, label='Predicciones futuras', linestyle='--')
 plt.xlabel('Fecha')
-plt.ylabel('TRM_cierre')
+plt.ylabel('Inflation')
 plt.legend()
 plt.show()
 
+
+# %%
