@@ -45,8 +45,8 @@ from tensorflow.keras.layers import LSTM, Dense
 
 # Construir el modelo LSTM
 model = Sequential()
-model.add(LSTM(4, input_shape=(time_step, len(predictor_columns))))
-model.add(Dense(4))
+model.add(LSTM(4, return_sequences = True, input_shape=(time_step, len(predictor_columns))))
+model.add(LSTM(4))
 model.add(Dense(1))
 
 # Compilar el modelo
@@ -120,8 +120,8 @@ for i in range(12):
 future_predictions = scaler_y.inverse_transform(np.array(future_predictions).reshape(-1, 1))
 
 # Crear un rango de fechas para las predicciones futuras
-last_date = data.index[-1]
-future_dates = pd.date_range(last_date, periods=12, freq='M')
+#last_date = data.index[-1]
+future_dates = pd.date_range(start="2024-04-30", periods=12, freq='M')
 
 # Crear un DataFrame para almacenar las predicciones futuras
 future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Inflation_pred'])
@@ -130,8 +130,10 @@ future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Infla
 print(future_df)
 
 # Graficar las predicciones futuras junto con los datos históricos
+historical_data  = pd.DataFrame(data[target_column])
+historical_data.index = pd.date_range(start="2005-01-31", periods=232, freq='M')
 plt.figure(figsize=(12, 6))
-plt.plot(data[target_column], label='Datos históricos')
+plt.plot(historical_data, label='Datos históricos')
 plt.plot(future_df, label='Predicciones futuras', linestyle='--')
 plt.xlabel('Fecha')
 plt.ylabel('Inflation')
