@@ -40,20 +40,26 @@ X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], 1)
 
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+
 
 # Construir el modelo LSTM
 model = Sequential()
-model.add(LSTM(50, return_sequences=True, input_shape=(time_step, 1)))
-model.add(LSTM(50, return_sequences=False))
-model.add(Dense(25))
+model.add(LSTM(13, return_sequences=False, input_shape=(time_step, 1)))
+model.add(Dropout(0.2))
+#model.add(LSTM(4, return_sequences=False))
+#model.add(Dropout(0.2))
 model.add(Dense(1))
+
+# Configurar el optimizador con la tasa de aprendizaje deseada
+optimizer = Adam(learning_rate=0.001)
 
 # Compilar el modelo
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Entrenar el modelo
-model.fit(X_train, y_train, batch_size=1, epochs=1)
+model.fit(X_train, y_train, batch_size=1, epochs=31)
 
 #%%
 
@@ -122,7 +128,7 @@ future_predictions = scaler.inverse_transform(np.array(future_predictions).resha
 
 # Crear un rango de fechas para las predicciones futuras
 last_date = data.index[-1]
-future_dates = pd.date_range(last_date, periods=12, freq='M')
+future_dates = np.arange(last_date+1, last_date+13)
 
 # Crear un DataFrame para almacenar las predicciones futuras
 future_df = pd.DataFrame(future_predictions, index=future_dates, columns=['Inflation_pred'])
@@ -138,6 +144,7 @@ plt.xlabel('Fecha')
 plt.ylabel('Inflation')
 plt.legend()
 plt.show()
+
 
 
 # %%

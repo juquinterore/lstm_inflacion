@@ -2,14 +2,38 @@
 import os
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 
 os.chdir(r"/Users/raul/Documents/GitHub/lstm_inflacion")
 data_path = r"./data/base_data.xlsx"
 data = pd.read_excel(data_path, sheet_name='data').dropna()
+
+plt.figure(figsize=(12, 6))
+fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+dates = pd.date_range(start="2005-01-01", periods=232, freq='M')
+# Plot each time series in its subplot
+axs[0, 0].plot(dates, data['Inflation'], label='Inflación', color='blue')
+axs[0, 0].set_xlabel('Date')
+axs[0, 0].set_ylabel('Inflación')
+
+axs[0, 1].plot(dates, data['ISE'], label='ISE', color='red')
+axs[0, 1].set_xlabel('Date')
+axs[0, 1].set_ylabel('ISE')
+
+axs[1, 0].plot(dates, data['TRM_promedio'], label='TRM promedio', color='green')
+axs[1, 0].set_xlabel('Date')
+axs[1, 0].set_ylabel('TRM promedio')
+
+axs[1, 1].plot(dates, data['PRECIP_GAP'], label='Precipitación', color='purple')
+axs[1, 1].set_xlabel('Date')
+axs[1, 1].set_ylabel('Precipitación')
+plt.xlabel('Fecha')
+plt.show()
+
 #%%
 # Seleccionar las columnas predictoras y la columna de inflación
-predictor_columns = ['ISE', 'TRM_promedio', 'PRECIP_GAP']  # Cambia esto a tus nombres de columnas
+predictor_columns = ['ISE', 'TRM_promedio', 'PRECIP_GAP']
 target_column = 'Inflation'
 data = data[predictor_columns + [target_column]]
 
@@ -41,19 +65,23 @@ X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], len(predictor_columns)
 #%%
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
 
 # Construir el modelo LSTM
 model = Sequential()
-model.add(LSTM(4, return_sequences = True, input_shape=(time_step, len(predictor_columns))))
-model.add(LSTM(4))
+model.add(LSTM(6, input_shape=(time_step, len(predictor_columns))))
+model.add(Dropout(0.1))
 model.add(Dense(1))
+
+# Configurar el optimizador con la tasa de aprendizaje deseada
+optimizer = Adam(learning_rate=0.001)
 
 # Compilar el modelo
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # Entrenar el modelo
-model.fit(X_train, y_train, epochs=200)
+model.fit(X_train, y_train, epochs=50)
 
 #%%
 
@@ -74,11 +102,9 @@ y_test = scaler_y.inverse_transform(y_test.reshape(-1, 1))
 # Calcular el error de la raíz cuadrada media (RMSE)
 rmse_train = np.sqrt(np.mean((train_predict - y_train) ** 2))
 rmse_test = np.sqrt(np.mean((test_predict - y_test) ** 2))
-
+#%%
 print(f'RMSE del conjunto de entrenamiento: {rmse_train}')
 print(f'RMSE del conjunto de prueba: {rmse_test}')
-#%%
-import matplotlib.pyplot as plt
 
 # Graficar los resultados
 train_plot = np.empty_like(scaled_data)
